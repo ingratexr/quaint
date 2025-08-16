@@ -1,5 +1,7 @@
 from pdf2image import convert_from_path
 import pytesseract
+from pdfminer.high_level import extract_pages
+from pdfminer.layout import LTTextContainer, LTTextLineHorizontal
 import os
 
 PDF_MAGIC_HEADER = b"%PDF-"
@@ -23,6 +25,31 @@ def pdf_to_text_ocr(filepath: str, discard_page_breaks: bool = False) -> str:
     texts = [pytesseract.image_to_string(page) for page in pages]
     delimiter = "\n\n" if discard_page_breaks else f"\n\n{PAGE_BREAK_STR}\n\n"
     return delimiter.join(texts)
+
+
+def pdf_to_text_extraction(filepath: str) -> str:
+    """
+    Turns a pdf into a string as long as the text of the pdf is extractable
+    (ie, doesn't work for scans).
+
+    :param filepath
+    Path to the pdf.
+    """
+    lines = []
+    for page_layout in extract_pages(filepath):
+        page_lines = []
+        for element in page_layout:
+            if isinstance(element, LTTextContainer):
+                for text_line in element:
+                    if isinstance(text_line, LTTextLineHorizontal):
+                        # Keep y-coordinate and text
+                        page_lines.append((text_line.y0, text_line.get_text()))
+        # Sort top-to-bottom (highest y0 first)
+        page_lines.sort(reverse=True, key=lambda x: x[0])
+        lines.extend([text for _, text in page_lines])
+
+    full_text = "".join(lines)
+    return full_text
 
 
 def get_from_pdf(filepath: str) -> str:
