@@ -181,7 +181,6 @@ It's even got a trash compactor.
 ## Full-Length Examples
 
 Input 1:
-
 ```
 REVISED 7/27/2004
 6.
@@ -244,7 +243,6 @@ His parents exchange a look.
 Lo Because.
 
 ```
-
 Output 1:
 ```
 Unable to move, David continues to smile as Nancy and her friends start down the block.
@@ -361,12 +359,11 @@ get a big sister like that?DAVID
 Beats me.
 
 ```
-
 Output 2:
 ```
 EXT. LOCAL HANGOUT - STREET - DAY
 
-Steve drags his skateboard as Davdi walks his bike down the business district of the small suburb.
+Steve drags his skateboard as David walks his bike down the business district of the small suburb.
 
 STEVE
 You ever walk by Simpson's desk when she's bent over grading papers or something and you can see right down her shirt?
