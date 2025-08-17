@@ -1,0 +1,14 @@
+[project]
+name = "quaint"
+version = "0.1.0"
+dependencies = [
+    "click",
+    "openai",
+    "dotenv",
+    "pdf2image",
+    "pytesseract",
+    "pdfminer.six",
+]
+
+[project.scripts]
+quaint = "quaint.cli.main:main"
