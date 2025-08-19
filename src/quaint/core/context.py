@@ -4,8 +4,8 @@ from typing import Optional
 
 # paths to linting prompts
 dir = Path(__file__).parent
-LINT_SCREENPLAY_PROMPT=Path(dir / "./prompts/lint_screenplay.txt")
-LINT_GENERIC_TEXT_PROMPT=Path(dir /"./prompts/lint_generic_text.txt")
+LINT_SCREENPLAY_PROMPT=Path(dir / "../prompts/lint_screenplay.txt")
+LINT_GENERIC_TEXT_PROMPT=Path(dir /"../prompts/lint_generic_text.txt")
 
 # constants for mode list
 TEXT_SHORT = "t"

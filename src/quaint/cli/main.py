@@ -1,5 +1,6 @@
 import click
-from ..context import CLIContext, modes
+from ..core.context import CLIContext, modes
+from ..core.textifier import Textifier
 
 
 @click.command()
@@ -37,10 +38,16 @@ def main(ctx, input_file, output, extracted_text, ocr, no_lint, mode, prompt):
                          confirm=click.confirm)
     valid = ctx.obj.is_valid_context()
 
+    progress_fn = lambda msg: click.echo(msg, nl=False)
+
     if not valid:
         click.echo("Setup is invalid! Aborting.")
         return
     
+    T = Textifier(click.echo)
+    text = T.text_from_pdf_ocr(ctx.obj.input_file, progress_fn=progress_fn)
+    
+
     click.echo("Get text: from pdf (extraction or ocr), or as text.")
     click.echo("Save the extracted text! With or without page breaks!")
     click.echo("Figure out how/whether to split into chunks")
