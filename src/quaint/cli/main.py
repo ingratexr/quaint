@@ -1,6 +1,6 @@
 import click
-from ..core.context import CLIContext, modes
-from ..core.textifier import Textifier
+from ..core.context import Context, modes
+from ..core.pipeline import Pipeline
 
 
 @click.command()
@@ -23,38 +23,26 @@ from ..core.textifier import Textifier
 @click.option('--prompt', 
               type=click.Path(exists=True, readable=True),
               help="File to use as custom ai linting prompt")
-@click.pass_context
-def main(ctx, input_file, output, extracted_text, ocr, no_lint, mode, prompt):
-    """Use text extraction """
+def main(input_file, output, extracted_text, ocr, no_lint, mode, prompt):
+    """quaint cli: quick ai-powered linting for pdf and text files"""
 
-    ctx.obj = CLIContext(input_file=input_file,
+    context = Context(input_file=input_file,
                          output_path=output,
                          extracted_text_path=extracted_text,
                          use_ocr=ocr,
                          no_lint=no_lint,
                          mode=mode,
                          custom_prompt_path=prompt,
-                         echo=click.echo,
-                         confirm=click.confirm)
-    valid = ctx.obj.is_valid_context()
-
-    progress_fn = lambda msg: click.echo(msg, nl=False)
+                         log=click.echo,
+                         confirm=click.confirm,
+                         progress_fn=lambda msg: click.echo(msg, nl=False))
+    valid = context.is_valid_context()
 
     if not valid:
         click.echo("Setup is invalid! Aborting.")
         return
-    
-    T = Textifier(click.echo)
-    text = T.text_from_pdf_ocr(ctx.obj.input_file, progress_fn=progress_fn)
-    
 
-    click.echo("Get text: from pdf (extraction or ocr), or as text.")
-    click.echo("Save the extracted text! With or without page breaks!")
-    click.echo("Figure out how/whether to split into chunks")
-    click.echo("Submit one or many calls to the ai! In parallel or not!")
-    click.echo("Reassemble text")
-    click.echo("Save text")
-    click.echo("Log any warnings")
+    Pipeline.run(context) 
 
 
 if __name__ == '__main__':

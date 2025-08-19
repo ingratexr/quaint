@@ -21,8 +21,9 @@ class Textifier:
     """
     supported_filetypes = [FileType.PDF, FileType.TEXT]
 
-    def __init__(self, log=print):
+    def __init__(self, log=print, progress_fn=None):
         self.log = log
+        self.progress_fn = progress_fn
 
 
     def filetype(self, file: Path) -> FileType:
@@ -48,7 +49,10 @@ class Textifier:
             return FileType.UNSUPPORTED
 
 
-    def extract_text(self, file: Path, filetype: Optional[FileType]=None, use_ocr: bool = False) -> Optional[str]:
+    def extract_text(self, 
+                     file: Path, 
+                     filetype: Optional[FileType]=None, 
+                     use_ocr: bool=False) -> Optional[str]:
         """
         Extracts and returns text from the input file.
 
@@ -62,7 +66,7 @@ class Textifier:
         When true, use optical character recognition for PDFs instead of direct
         text extraction. False by default.
         """
-        filetype = filetype if filetype else Textifier.filetype(file)
+        filetype = filetype if filetype else self.filetype(file)
         if not filetype in self.supported_filetypes:
             self.log("Unsupported filetype. Cannot get text.")
             return None
@@ -86,7 +90,7 @@ class Textifier:
             return f.read()
 
 
-    def text_from_pdf_ocr(self, file: Path, mark_page_breaks: bool=False, progress_fn=None) -> str:
+    def text_from_pdf_ocr(self, file: Path, mark_page_breaks: bool=False) -> str:
         """
         Extracts and returns text from a PDF using optical character recognition.
 
@@ -95,9 +99,6 @@ class Textifier:
 
         :param mark_page_break
         If true, adds a string marking each page break. False by default.
-
-        :param progress_fn
-        Function repeatedly called with progress updates for OCR process.
         """
         self.log("Starting PDF conversion for OCR...")
         pages = convert_from_path(file)
@@ -105,10 +106,10 @@ class Textifier:
         total = len(pages)
         texts = []
         for idx, page in enumerate(pages):
-            if progress_fn:
-                progress_fn(f"\rConverting page {idx + 1}/{total}")
+            if self.progress_fn:
+                self.progress_fn(f"\rConverting page {idx + 1}/{total}")
                 if idx + 1 == total:
-                    progress_fn("\n")
+                    self.progress_fn("\n")
             texts.append(pytesseract.image_to_string(page))
         delimiter = f"\n\n{PAGE_BREAK_DELIMITER}\n\n" if mark_page_breaks else "\n\n"
         return delimiter.join(texts) 
