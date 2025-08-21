@@ -1,5 +1,5 @@
 from .context import Context
-from .textifier import Textifier, FileType
+from .textifier import Textifier
 from .ai_linter import AILinter
 from pathlib import Path
 
@@ -17,44 +17,33 @@ class Pipeline:
         ai = AILinter()
         log = ctx.log
 
-        # extract text, or faceplant gracefully
         try:
-            text = p.input_file_text(ctx=ctx, tx=tx)
+            # extract text, or faceplant gracefully
+            text = tx.extract_text(file=ctx.input_file, use_ocr=ctx.use_ocr)    
+            if text == None:
+                log("Unable to extract text. Aborting.")
+                return
+            elif text.strip() == "":
+                log("Extracted an empty string, or just white space. Aborting.")
+                return
+
+            # otherwise 
+            p.write_file(path=ctx.extracted_text_file, text=text)
+            log("Saved extracted text.")
+
+            # if no lint, that's it
+            if ctx.no_lint:
+                return
+
+            # lint, save, declare victory
+            log("AI linting...")
+            linted = ai.lint_text(text=text, linting_prompt=ctx.prompt_text)
+            p.write_file(path=ctx.output_file, text=linted)
+            log("Finished!")
+
         except Exception as e:
             log(f"Encountered an unexpected error: {e}")
-            text = None
-        if text == None:
-            log("Unable to extract text. Aborting.")
-            return
-        elif text.strip() == "":
-            log("Extracted an empty string, or just white space. Aborting.")
-            return
-
-        # otherwise 
-        p.write_file(path=ctx.extracted_text_file, text=text)
-        log("Saved extracted text.")
-
-        # if no lint, that's it, declare victory
-        if ctx.no_lint:
-            return
-
-        # lint, save, declare victory
-        log("AI linting...")
-        linted = ai.lint_text(text=text, linting_prompt=ctx.prompt_text)
-        p.write_file(path=ctx.output_file, text=linted)
-        log("Finished!")
  
-
-    @staticmethod
-    def input_file_type(ctx: Context, tx: Textifier) -> FileType:
-        return tx.filetype(ctx.input_file)
-    
-    
-    @staticmethod
-    def input_file_text(ctx: Context, tx: Textifier) -> str:
-        return tx.extract_text(file=ctx.input_file,
-                               use_ocr=ctx.use_ocr)
-
 
     @staticmethod
     def write_file(path: Path, text: str) -> None:
