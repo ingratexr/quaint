@@ -5,6 +5,7 @@ from pdfminer.layout import LTTextContainer, LTTextLineHorizontal
 from pathlib import Path
 from enum import Enum
 from typing import Optional
+import shutil
 
 PDF_MAGIC_HEADER = b"%PDF-"
 PAGE_BREAK_DELIMITER = "<PAGE_BREAK />"
@@ -68,15 +69,21 @@ class Textifier:
         """
         filetype = filetype if filetype else self.filetype(file)
         if not filetype in self.supported_filetypes:
-            self.log("Unsupported filetype. Cannot get text.")
+            self.log("Unsupported filetype.")
             return None
         elif filetype == FileType.TEXT:
             # ocr flag could be present here, but would do nothing. Ignoring for now.
             return self.text_from_text(file)
         elif filetype == FileType.PDF:
             if use_ocr:
-                return self.text_from_pdf_ocr(file)
-            return self.text_from_pdf_extraction(file)
+                try:
+                    return self.text_from_pdf_ocr(file)
+                except Exception as e:
+                    # if ocr extraction fails, check for OCR dependencies
+                    self.courtesy_check_ocr_dependencies()
+                    raise e
+            else:
+                return self.text_from_pdf_extraction(file)
 
 
     def text_from_text(self, file: Path) -> str:
@@ -145,3 +152,25 @@ class Textifier:
         self.log("Extraction complete.")
         return full_text
 
+
+    def courtesy_check_ocr_dependencies(self) -> None:
+        """
+        Checks if tesseract and poppler (which are required for OCR to work) are
+        both installed. Logs a helpful message if and only if one or both are
+        missing.
+        """
+        tesseract = shutil.which("tesseract")
+        poppler = shutil.which("pdftoppm")
+        if not poppler:
+            poppler = shutil.which("pdftocairo")
+        
+        # if both are installed, do nothing
+        if poppler and tesseract:
+            return
+        
+        # if at least one is missing, log a helpful message
+        missing = ["tesseract" if not tesseract else None,
+                   "poppler" if not poppler else None]
+        missing = (", ").join(missing)
+        self.log(f"Tesseract and Poppler must both be installed on your machine to use OCR. It looks like you may be missing [{missing}].")
+        

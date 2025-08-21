@@ -17,8 +17,20 @@ class Pipeline:
         ai = AILinter()
         log = ctx.log
 
-        # extract and save raw text
-        text = p.input_file_text(ctx=ctx, tx=tx)
+        # extract text, or faceplant gracefully
+        try:
+            text = p.input_file_text(ctx=ctx, tx=tx)
+        except Exception as e:
+            log(f"Encountered an unexpected error: {e}")
+            text = None
+        if text == None:
+            log("Unable to extract text. Aborting.")
+            return
+        elif text.strip() == "":
+            log("Extracted an empty string, or just white space. Aborting.")
+            return
+
+        # otherwise 
         p.write_file(path=ctx.extracted_text_file, text=text)
         log("Saved extracted text.")
 

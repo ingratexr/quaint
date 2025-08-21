@@ -1,4 +1,3 @@
-import shutil
 from pathlib import Path
 from typing import Optional
 
@@ -118,22 +117,4 @@ class Context:
         valid_prompt_text = True if self.no_lint else bool(self.prompt_text) 
         req = [self.input_file, self.output_file, self.extracted_text_file, valid_prompt_text]
         return sum([bool(_) for _ in req]) == len(req)
-        
 
-    def has_ocr_dependencies_installed(self) -> bool:
-        """
-        Returns true if the system appears to have the necessary dependencies
-        installed for performing OCR. Warns the user and returns false if not.
-        """
-        tesseract = shutil.which("tesseract")
-        poppler = shutil.which("pdftoppm")
-        if not poppler:
-            poppler = shutil.which("pdftocairo")
-        if poppler and tesseract:
-            return True
-        missing = ["tesseract" if not tesseract else None,
-                   "poppler" if not poppler else None]
-        missing = (", ").join(missing)
-        print(f"Tesseract and Poppler must both be installed on your machine \
-              to use OCR. It looks like you may be missing [{missing}].")
-        return False
