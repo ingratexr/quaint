@@ -8,7 +8,6 @@ from typing import Optional
 import shutil
 
 PDF_MAGIC_HEADER = b"%PDF-"
-PAGE_BREAK_DELIMITER = "<PAGE_BREAK />"
 
 class FileType(str, Enum):
     PDF = "PDF"
@@ -52,34 +51,32 @@ class Textifier:
 
     def extract_text(self, 
                      file: Path, 
-                     filetype: Optional[FileType]=None, 
-                     use_ocr: bool=False) -> Optional[str]:
+                     use_ocr: bool=False) -> Optional[list[str]]:
         """
         Extracts and returns text from the input file.
 
         :param file
         Path of file to extract.
 
-        :param filetype
-        File's FileType. None by default; if None will be determined when run.
-
         :param use_ocr
         When true, use optical character recognition for PDFs instead of direct
         text extraction. False by default.
         """
-        filetype = filetype if filetype else self.filetype(file)
+        filetype = self.filetype(file)
         if not filetype in self.supported_filetypes:
             self.log("Unsupported filetype.")
             return None
         elif filetype == FileType.TEXT:
-            # ocr flag could be present here, but would do nothing. Ignoring for now.
-            return self.text_from_text(file)
+            # put contents inside a list so that this function always returns
+            # a list of strings - pages of a pdf, or in this case, the whole text
+            return [self.text_from_text(file).strip()]
         elif filetype == FileType.PDF:
             if use_ocr:
                 try:
                     return self.text_from_pdf_ocr(file)
                 except Exception as e:
-                    # if ocr extraction fails, check for OCR dependencies
+                    # if ocr extraction fails, check for OCR dependencies that
+                    # may not be installed
                     self.courtesy_check_ocr_dependencies()
                     raise e
             else:
@@ -97,15 +94,13 @@ class Textifier:
             return f.read()
 
 
-    def text_from_pdf_ocr(self, file: Path, mark_page_breaks: bool=False) -> str:
+    def text_from_pdf_ocr(self, file: Path) -> list[str]:
         """
-        Extracts and returns text from a PDF using optical character recognition.
+        Extracts and returns text from a PDF using optical character recognition,
+        returning an array of strings where each string is a page of the PDF.
 
         :param file
         Path of the PDF to read.
-
-        :param mark_page_break
-        If true, adds a string marking each page break. False by default.
         """
         self.log("Starting PDF conversion for OCR...")
         pages = convert_from_path(file)
@@ -118,19 +113,15 @@ class Textifier:
                 if idx + 1 == total:
                     self.progress_fn("\n")
             texts.append(pytesseract.image_to_string(page))
-        delimiter = f"\n\n{PAGE_BREAK_DELIMITER}\n\n" if mark_page_breaks else "\n\n"
-        return delimiter.join(texts) 
+        return texts
 
 
-    def text_from_pdf_extraction(self, file: Path, mark_page_breaks=False) -> str:
+    def text_from_pdf_extraction(self, file: Path) -> list[str]:
         """
         Extracts and returns text directly from pdf.
 
         :param file
         Path of the PDF to read.
-
-        :param mark_page_break
-        If true, adds a string marking each page break. False by default.
         """
         lines = []
         self.log("Starting extraction...")
@@ -145,12 +136,9 @@ class Textifier:
             # Sort top-to-bottom (highest y0 first)
             page_lines.sort(reverse=True, key=lambda x: x[0])
             lines.extend([text for _, text in page_lines])
-            if mark_page_breaks:
-                lines.append(f"\n\n{PAGE_BREAK_DELIMITER}\n\n")
-
-        full_text = "".join(lines)
+        
         self.log("Extraction complete.")
-        return full_text
+        return lines
 
 
     def courtesy_check_ocr_dependencies(self) -> None:

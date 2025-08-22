@@ -18,6 +18,9 @@ class Pipeline:
         log = ctx.log
 
         try:
+
+            raise Exception("Text is now an array! Not implemented in pipeline!")
+
             # extract text, or faceplant gracefully
             text = tx.extract_text(file=ctx.input_file, use_ocr=ctx.use_ocr)    
             if text == None:
