@@ -135,7 +135,7 @@ class Textifier:
         :param file
         Path of the PDF to read.
         """
-        lines = []
+        pages = []
         self.log("Starting extraction...")
         for page_layout in extract_pages(file):
             page_lines = []
@@ -147,10 +147,10 @@ class Textifier:
                             page_lines.append((text_line.y0, text_line.get_text()))
             # Sort top-to-bottom (highest y0 first)
             page_lines.sort(reverse=True, key=lambda x: x[0])
-            lines.extend([text for _, text in page_lines])
+            pages.append("".join([text for _, text in page_lines]))
         
         self.log("Extraction complete.")
-        return lines
+        return pages 
 
 
     def courtesy_check_ocr_dependencies(self) -> None:
