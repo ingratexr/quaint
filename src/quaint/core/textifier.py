@@ -15,6 +15,16 @@ class FileType(str, Enum):
     UNSUPPORTED = "Unsupported"
 
 
+class Text:
+    def __init__(self, 
+                 filetype: FileType = None,
+                 text: str = None,
+                 pages: list[str] = None):
+        self.filetype = filetype
+        self.text = text
+        self.pages = pages
+
+
 class Textifier:
     """
     Extracts text from plain text or pdf input file.
@@ -51,7 +61,7 @@ class Textifier:
 
     def extract_text(self, 
                      file: Path, 
-                     use_ocr: bool=False) -> Optional[list[str]]:
+                     use_ocr: bool=False) -> Text:
         """
         Extracts and returns text from the input file.
 
@@ -63,24 +73,26 @@ class Textifier:
         text extraction. False by default.
         """
         filetype = self.filetype(file)
+        text = None
+        pages = None
         if not filetype in self.supported_filetypes:
             self.log("Unsupported filetype.")
-            return None
         elif filetype == FileType.TEXT:
             # put contents inside a list so that this function always returns
             # a list of strings - pages of a pdf, or in this case, the whole text
-            return [self.text_from_text(file).strip()]
+            text = self.text_from_text(file).strip()
         elif filetype == FileType.PDF:
             if use_ocr:
                 try:
-                    return self.text_from_pdf_ocr(file)
+                    pages = self.text_from_pdf_ocr(file)
                 except Exception as e:
                     # if ocr extraction fails, check for OCR dependencies that
                     # may not be installed
                     self.courtesy_check_ocr_dependencies()
                     raise e
             else:
-                return self.text_from_pdf_extraction(file)
+                pages = self.text_from_pdf_extraction(file)
+        return Text(filetype=filetype, text=text, pages=pages)
 
 
     def text_from_text(self, file: Path) -> str:
