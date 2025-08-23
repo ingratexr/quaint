@@ -133,8 +133,12 @@ class Strutil:
         chunks = self.split_by_page_number(text)
 
         # if any chunks are too long after page numbers, try blank lines
+        # note that this is specifically splitting by emptyish lines, and there
+        # are edge cases where the assumptions about what an emptyish line is
+        # could be wrong... but at that point the text may require some manual 
+        # clean up.
         chunks = [s for s in self.flatten([
-            c if len(c) <= max_chunk_chars else self.split_by_empty_lines(c)
+            c if len(c) <= max_chunk_chars else self.split_by_emptyish_lines(c)
             for c in chunks
         ])]
 
@@ -244,8 +248,8 @@ class Strutil:
         return self.split_by_line_type(text=text, line_matcher=self.line_is_page_number)
     
     
-    def split_by_empty_lines(self, text: str) -> list[str]:
-        return self.split_by_line_type(text=text, line_matcher=self.line_is_empty)
+    def split_by_emptyish_lines(self, text: str) -> list[str]:
+        return self.split_by_line_type(text=text, line_matcher=self.line_is_emptyish)
 
 
     def line_is_scene_heading(self, line: str) -> bool:
@@ -302,14 +306,18 @@ class Strutil:
         return RE_PAGE_NUMBER.match(l) or RE_ROMAN_NUMERAL_PAGE_NUMBER.match(l)
  
 
-    def line_is_empty(self, line: str) -> bool:
+    def line_is_emptyish(self, line: str) -> bool:
         """
-        Returns true if a line is empty.
+        Returns true if a line is empty, or empty-ish (one non-alphanumeric 
+        character).
 
+        OCR scans frequently hallucinate a single character. If it's not
+        alphanumeric it's very likely this can be ignored. 
+        
         :param line
         String to check.
         """
-        return line.strip() == ""
+        return line.strip() == "" or (len(line) == 1 and not line.isalnum())
     
 
     def subarrayify(self, arr: list, subarray_length: int) -> list[str]:
