@@ -4,7 +4,6 @@ from pdfminer.high_level import extract_pages
 from pdfminer.layout import LTTextContainer, LTTextLineHorizontal
 from pathlib import Path
 from enum import Enum
-from typing import Optional
 import shutil
 
 PDF_MAGIC_HEADER = b"%PDF-"
@@ -78,8 +77,6 @@ class Textifier:
         if not filetype in self.supported_filetypes:
             self.log("Unsupported filetype.")
         elif filetype == FileType.TEXT:
-            # put contents inside a list so that this function always returns
-            # a list of strings - pages of a pdf, or in this case, the whole text
             text = self.text_from_text(file).strip()
         elif filetype == FileType.PDF:
             if use_ocr:

@@ -26,23 +26,28 @@ from ..core.pipeline import Pipeline
 def main(input_file, output, extracted_text, ocr, no_lint, mode, prompt):
     """quaint cli: quick ai-powered linting for pdf and text files"""
 
-    context = Context(input_file=input_file,
-                         output_path=output,
-                         extracted_text_path=extracted_text,
-                         use_ocr=ocr,
-                         no_lint=no_lint,
-                         mode=mode,
-                         custom_prompt_path=prompt,
-                         log=click.echo,
-                         confirm=click.confirm,
-                         progress_fn=lambda msg: click.echo(msg, nl=False))
-    valid = context.is_valid_context()
+    context = Context(
+        input_file=input_file,
+        output_path=output,
+        extracted_text_path=extracted_text,
+        use_ocr=ocr,
+        no_lint=no_lint,
+        mode=mode,
+        custom_prompt_path=prompt,
+        log=click.echo,
+        confirm=click.confirm,
+        progress_fn=lambda msg: click.echo(msg, nl=False),
+    )
 
-    if not valid:
+    if not context.is_valid_context():
         click.echo("Setup is invalid! Aborting.")
         return
 
-    Pipeline.run(context) 
+    pipeline = Pipeline(
+        log=click.echo, 
+        progress_fn=lambda msg: click.echo(msg, nl=False),
+    )
+    pipeline.run(context)
 
 
 if __name__ == '__main__':
