@@ -1,6 +1,7 @@
 import re
 from typing import Callable
 from collections.abc import Iterable
+from pathlib import Path
 
 # arbitrary default number of maximum characters to lint at one time
 # 10_000 is about 10 pages of screenplay, or less of scanned book text
@@ -369,3 +370,8 @@ class Strutil:
                 yield from self.flatten(item)
             else:
                 yield item
+
+    @staticmethod
+    def write_file(path: Path, text: str) -> None:
+        with open(path, "w") as f:
+            f.write(text)
