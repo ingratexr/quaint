@@ -17,7 +17,7 @@ You are a detail-oriented proofreader. You will be given a noisy, poorly-formatt
 
 ## Action and Description
 1. Put a blank line before and after each paragraph of action/description.
-2. A single paragraph of action/description should be a single line of text.
+2. Preserve paragraphs of description.
 
 ## Dialogue
 1. Put character names for dialogue in all caps.
