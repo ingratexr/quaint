@@ -1,9 +1,7 @@
 from .context import Context, Mode
-from .textifier import Textifier, FileType, Text
+from .textifier import Textifier, FileType, File
 from .ai_linter import AILinter
-from pathlib import Path
 from .strutil import Strutil
-from typing import Callable
 
 class Pipeline:
     def __init__(
@@ -21,82 +19,60 @@ class Pipeline:
         self.ai = AILinter()
 
 
-    def run(self, context: Context) -> None:
+    async def run(self, context: Context) -> None:
         try:
-            text = self.textifier.extract_text(
+            file = self.textifier.extract_text(
                 file=context.input_file, 
                 use_ocr=context.use_ocr
             )
-            if (text.filetype == FileType.UNSUPPORTED or not text.filetype
-                or not (text.text or text.pages)):
+            if (file.filetype == FileType.UNSUPPORTED or not file.filetype
+                or not (file.text or file.pages)):
                 self.log("Unable to extract text. Sorry!")
-                return 
-            match context.mode:
-                case Mode.TEXT:
-                    return self._generic_text_pipeline(context, text)
-                case Mode.SCREENPLAY:
-                    return self._screenplay_pipeline(context, text)
-                case _:
-                    raise Exception(f"Unexpected mode: {context.mode}")
+                return
+            
+            # Save the extracted text
+            extracted = "".join(file.pages) if file.pages else file.text
+            self.strutil.write_file(path=context.extracted_text_file, text=extracted)
+            self.log(f"Saved extracted text to: {context.extracted_text_file}")
+
+            # if no lint, that's it
+            if context.no_lint:
+                return
+
+            # lint, save, declare victory
+            chunks = self._get_chunked(context, file)
+            self.log(f"AI linting in a batch of {len(chunks)} pieces. This may take a bit...")
+            linted_text = await self._get_linted(context, chunks)
+            self.log("AI linting complete.")
+            self.strutil.write_file(path=context.output_file, text=linted_text)
+            self.log(f"Saved linted text to: {context.output_file}")
+            self.log("Finished!")
         except Exception as e:
             self.log(f"Encountered an unexpected error: {e}")
- 
-
-    def _screenplay_pipeline(self, context: Context, text: Text) -> str:
-        chunks = self._chunker(text, self.strutil.chunk_screenplay_text)
-        print("chunks length: ", len(chunks))
-        print("ai lint not yet implemented")
 
 
-    def _generic_text_pipeline(self, context: Context, text: Text) -> str:
-        chunks = self._chunker(text, self.strutil.chunk_generic_text)
-        print("chunks length: ", len(chunks))
-        print("ai lint not yet implemented")
-        
-
-    def _chunker(self, text: Text, text_chunker: Callable) -> list[str]:
-        if text.pages:
-            return self.strutil.chunk_pages(text.pages)
-        elif text.text:
-            return text_chunker(text.text)
+    def _get_chunked(self, context: Context, file: File) -> list[str]:
+        if file.pages:
+            chunks = self.strutil.chunk_pages(file.pages)
+        elif file.text:
+            # chunking files is different depending on the type of input text
+            match context.mode:
+                case Mode.SCREENPLAY:
+                    chunk_fn = self.strutil.chunk_screenplay_text
+                case _:
+                    chunk_fn = self.strutil.chunk_generic_text
+            chunks = chunk_fn(file.text)
         else:
             raise Exception("Extracted text contains neither text nor pages.")
+        return chunks
 
 
-    @staticmethod
-    def write_file(path: Path, text: str) -> None:
-        with open(path, "w") as f:
-            f.write(text)
+    async def _get_linted(self, context: Context, chunks: list[str]) -> str:
+        raw_linted = await self.ai.batch_lint_texts(chunks, context.prompt_text)
+        return self._clean_up_raw_linted(context=context, text="\n".join(raw_linted))
 
 
+    def _clean_up_raw_linted(self, context: Context, text: str) -> str:
+        # future cleanup may vary depending on filetype
+        return self.strutil.remove_consecutive_blank_lines(text)
 
-
-            # # now that strutil exists next step is:
-            # # - split the input file into chunks depending on filetype
-            # # - make ai lint calls in parallel so it doesn't take so long
-            # # - reconstruct and save
-
-            # raise Exception("Text is now an array! Not implemented in pipeline!")
-
-            # # extract text, or faceplant gracefully
-            # text = tx.extract_text(file=ctx.input_file, use_ocr=ctx.use_ocr)    
-            # if text == None:
-            #     log("Unable to extract text. Aborting.")
-            #     return
-            # elif text.strip() == "":
-            #     log("Extracted an empty string, or just white space. Aborting.")
-            #     return
-
-            # # otherwise 
-            # p.write_file(path=ctx.extracted_text_file, text=text)
-            # log("Saved extracted text.")
-
-            # # if no lint, that's it
-            # if ctx.no_lint:
-            #     return
-
-            # # lint, save, declare victory
-            # log("AI linting...")
-            # linted = ai.lint_text(text=text, linting_prompt=ctx.prompt_text)
-            # p.write_file(path=ctx.output_file, text=linted)
-            # log("Finished!")

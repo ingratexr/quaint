@@ -14,7 +14,7 @@ class FileType(str, Enum):
     UNSUPPORTED = "Unsupported"
 
 
-class Text:
+class File:
     def __init__(self, 
                  filetype: FileType = None,
                  text: str = None,
@@ -60,7 +60,7 @@ class Textifier:
 
     def extract_text(self, 
                      file: Path, 
-                     use_ocr: bool=False) -> Text:
+                     use_ocr: bool=False) -> File:
         """
         Extracts and returns text from the input file.
 
@@ -89,7 +89,7 @@ class Textifier:
                     raise e
             else:
                 pages = self.text_from_pdf_extraction(file)
-        return Text(filetype=filetype, text=text, pages=pages)
+        return File(filetype=filetype, text=text, pages=pages)
 
 
     def text_from_text(self, file: Path) -> str:

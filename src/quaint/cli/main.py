@@ -1,6 +1,7 @@
 import click
 from ..core.context import Context, modes
 from ..core.pipeline import Pipeline
+import asyncio
 
 
 @click.command()
@@ -38,16 +39,18 @@ def main(input_file, output, extracted_text, ocr, no_lint, mode, prompt):
         confirm=click.confirm,
         progress_fn=lambda msg: click.echo(msg, nl=False),
     )
+    asyncio.run(main_async(context))
 
+
+async def main_async(context: Context) -> None:
     if not context.is_valid_context():
         click.echo("Setup is invalid! Aborting.")
         return
-
     pipeline = Pipeline(
         log=click.echo, 
         progress_fn=lambda msg: click.echo(msg, nl=False),
     )
-    pipeline.run(context)
+    await pipeline.run(context)
 
 
 if __name__ == '__main__':
