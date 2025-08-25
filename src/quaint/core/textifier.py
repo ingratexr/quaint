@@ -1,3 +1,6 @@
+"""
+Textifier class for extracting text from plain text or pdf input file.
+"""
 from pdf2image import convert_from_path
 import pytesseract
 from pdfminer.high_level import extract_pages
@@ -9,16 +12,24 @@ import shutil
 PDF_MAGIC_HEADER = b"%PDF-"
 
 class FileType(str, Enum):
+    """
+    Enum for file types.
+    """
     PDF = "PDF"
     TEXT = "Plain Text"
     UNSUPPORTED = "Unsupported"
 
 
 class File:
-    def __init__(self, 
-                 filetype: FileType = None,
-                 text: str = None,
-                 pages: list[str] = None):
+    """
+    Class for representing a file with extracted text.
+    """
+    def __init__(
+        self,
+        filetype: FileType = None,
+        text: str = None,
+        pages: list[str] = None,
+    ) -> None:
         self.filetype = filetype
         self.text = text
         self.pages = pages
@@ -26,7 +37,7 @@ class File:
 
 class Textifier:
     """
-    Extracts text from plain text or pdf input file.
+    Class for extracting text from plain text or pdf input file.
     """
     supported_filetypes = [FileType.PDF, FileType.TEXT]
 
@@ -37,7 +48,8 @@ class Textifier:
 
     def filetype(self, file: Path) -> FileType:
         """
-        Given the path to a file, returns the FileType: PDF, TEXT, or UNSUPPORTED.
+        Given the path to a file, returns the FileType: PDF, TEXT, or 
+        UNSUPPORTED.
 
         :param file
         Path of file to extract.
@@ -47,10 +59,10 @@ class Textifier:
             header = f.read(5)
             if header == PDF_MAGIC_HEADER:
                 return FileType.PDF
-            
+
         # Otherwise try to get the plain text. If no worky, give up.
         try:
-            with open(file, "r") as f:
+            with open(file, "r", encoding="utf-8") as f:
                 f.read(1)
                 # if it reads without an exception, assume it's plain text
                 return FileType.TEXT
@@ -58,9 +70,11 @@ class Textifier:
             return FileType.UNSUPPORTED
 
 
-    def extract_text(self, 
-                     file: Path, 
-                     use_ocr: bool=False) -> File:
+    def extract_text(
+        self,
+        file: Path,
+        use_ocr: bool=False,
+    ) -> File:
         """
         Extracts and returns text from the input file.
 
@@ -99,14 +113,15 @@ class Textifier:
         :param file
         Path of the file to read and return text from.
         """
-        with open(file, "r") as f:
+        with open(file, "r", encoding="utf-8") as f:
             return f.read()
 
 
     def text_from_pdf_ocr(self, file: Path) -> list[str]:
         """
-        Extracts and returns text from a PDF using optical character recognition,
-        returning an array of strings where each string is a page of the PDF.
+        Extracts and returns text from a PDF using optical character
+        recognition, returning an array of strings where each string is a page
+        of the PDF.
 
         :param file
         Path of the PDF to read.
@@ -145,9 +160,9 @@ class Textifier:
             # Sort top-to-bottom (highest y0 first)
             page_lines.sort(reverse=True, key=lambda x: x[0])
             pages.append("".join([text for _, text in page_lines]))
-        
+
         self.log("Extraction complete.")
-        return pages 
+        return pages
 
 
     def courtesy_check_ocr_dependencies(self) -> None:
@@ -160,14 +175,14 @@ class Textifier:
         poppler = shutil.which("pdftoppm")
         if not poppler:
             poppler = shutil.which("pdftocairo")
-        
         # if both are installed, do nothing
         if poppler and tesseract:
             return
-        
+
         # if at least one is missing, log a helpful message
         missing = ["tesseract" if not tesseract else None,
                    "poppler" if not poppler else None]
         missing = (", ").join(missing)
-        self.log(f"Tesseract and Poppler must both be installed on your machine to use OCR. It looks like you may be missing [{missing}].")
-        
+        self.log(f"Tesseract and Poppler must both be installed on your \
+            machine to use OCR. It looks like you may be missing [{missing}].")
+
