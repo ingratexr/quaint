@@ -70,8 +70,8 @@ class Context:
             extracted_text_path,
             DEFAULT_EXTRACTED_SUFFIX,
         )
-        self.use_ocr = use_ocr
-        self.no_lint = no_lint
+        self.use_ocr = bool(use_ocr)
+        self.no_lint = bool(no_lint)
         self.mode = mode_string_to_enum_map.get(mode, DEFAULT_MODE)
         self.prompt_text = self._get_prompt_text(
             provided_mode=mode_string_to_enum_map[mode] if mode else None,
