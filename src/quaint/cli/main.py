@@ -21,8 +21,7 @@ import asyncio
 @click.option(
     "--ocr",
     is_flag=True,
-    help="Use optical character recognition to extract text from pdf instead \
-        of direct text extraction")
+    help="Use optical character recognition to extract text from pdf instead of direct text extraction")
 @click.option(
     "--no-lint",
     is_flag=True,

@@ -25,8 +25,7 @@ class AILinter:
                 load_dotenv()
                 key = os.getenv(OPENAI_API_KEY_NAME)
             if not key:
-                raise ValueError(f"No open ai api key provided. No value found \
-                    in env for key \"{OPENAI_API_KEY_NAME}\"")
+                raise ValueError(f"No api key provided. No value found in env for key \"{OPENAI_API_KEY_NAME}\"")
             openai.api_key = key
 
 
@@ -100,8 +99,7 @@ class AILinter:
             LINTING_MODEL,
             [
                 self.get_message("system", linting_prompt),
-                self.get_message("user", f"Please clean up the following text: \
-                    \n\n{text}"),
+                self.get_message("user", f"Please clean up the following text: \n\n{text}"),
             ]
         )
 

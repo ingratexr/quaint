@@ -137,14 +137,10 @@ class Context:
         Option to skip linting and extract text only.
         """
         if no_lint and (provided_mode or custom_prompt_path):
-            self.log("You provided the --no-lint flag, so no linting will be \
-                performed. The mode and/or prompt you provided will be \
-                ignored.")
+            self.log("You provided the --no-lint flag, so no linting will be performed. The mode and/or prompt you provided will be ignored.")
             return ""
         if provided_mode and custom_prompt_path:
-            self.log(f"You provided the preset mode {provided_mode} and also \
-                the custom prompt file {custom_prompt_path}. Ignoring \
-                {provided_mode} mode and using the custom prompt instead.")
+            self.log(f"You provided the preset mode {provided_mode} and also the custom prompt file {custom_prompt_path}. Ignoring {provided_mode} mode and using the custom prompt instead.")
         mode = provided_mode if provided_mode else self.mode or DEFAULT_MODE
         path = (custom_prompt_path if custom_prompt_path
                 else mode_to_prompt_path_map[mode])

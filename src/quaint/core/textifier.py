@@ -183,6 +183,5 @@ class Textifier:
         missing = ["tesseract" if not tesseract else None,
                    "poppler" if not poppler else None]
         missing = (", ").join(missing)
-        self.log(f"Tesseract and Poppler must both be installed on your \
-            machine to use OCR. It looks like you may be missing [{missing}].")
+        self.log(f"Tesseract and Poppler must both be installed on your system to use OCR. It looks like you may be missing [{missing}].")
 

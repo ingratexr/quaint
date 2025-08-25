@@ -63,8 +63,7 @@ class Pipeline:
                 return
             # lint, save, declare victory
             chunks = self._get_chunked(context, file)
-            self.log(f"AI linting in a batch of {len(chunks)} pieces. \
-                This may take a while...")
+            self.log(f"AI linting in a batch of {len(chunks)} pieces. This may take a while...")
             linted_text = await self._get_linted(context, chunks)
             self.log("AI linting complete.")
             self.strutil.write_file(path=context.output_file, text=linted_text)
