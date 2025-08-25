@@ -1,3 +1,6 @@
+"""
+String utilities for quaint.
+"""
 import re
 from typing import Callable
 from collections.abc import Iterable
@@ -5,7 +8,7 @@ from pathlib import Path
 
 # arbitrary default number of maximum characters to lint at one time
 # 10_000 is about 10 pages of screenplay, or less of scanned book text
-MAX_CHUNK_CHAR_COUNT = 10_000 
+MAX_CHUNK_CHAR_COUNT = 10_000
 
 # If a line is converted to uppercase and starts with one of these keywords,
 # assume it's a scene heading
@@ -51,11 +54,18 @@ RE_ROMAN_NUMERAL_PAGE_NUMBER = re.compile(r"^\s*[ivxlc]{1,10}\.?\s*$")
 
 
 class Strutil:
+    """
+    String utility class for handling quaint string operations.
+    """
     def __init__(self, log: Callable = print):
         self.log = log
 
 
-    def chunk_pages(self, pages: list[str], max_chunk_chars: int=MAX_CHUNK_CHAR_COUNT) -> list[str]:
+    def chunk_pages(
+        self,
+        pages: list[str],
+        max_chunk_chars: int=MAX_CHUNK_CHAR_COUNT,
+    ) -> list[str]:
         """
         Takes a list of strings, concatenates them together, maintaining order
         and keeping each concatenated string no longer than max_chunk_chars
@@ -76,9 +86,11 @@ class Strutil:
         return self.chunk_strs_by_char_count(strs=pages, max_char_count=max_chunk_chars)
 
 
-    def chunk_screenplay_text(self, 
-                              text: str, 
-                              max_chunk_chars: int = MAX_CHUNK_CHAR_COUNT) -> list[str]:
+    def chunk_screenplay_text(
+        self,
+        text: str,
+        max_chunk_chars: int = MAX_CHUNK_CHAR_COUNT,
+    ) -> list[str]:
         """
         Takes screenplay text as an input string and returns a list of strings
         where each string will *NORMALLY* be no longer than max_chunk_chars. For
@@ -96,7 +108,7 @@ class Strutil:
         # split screenplay into scenes - this will cover most cases
         chunks = self.split_by_scene_heading(text)
 
-        # if any chunk is still too long (no scene headings, like a William 
+        # if any chunk is still too long (no scene headings, like a William
         # Goldman script or something) try to split by transitions
         chunks = [s for s in self.flatten([
             c if len(c) <= max_chunk_chars else self.split_by_scene_transition(c)
@@ -111,12 +123,17 @@ class Strutil:
         ])]
 
         # if any chunk is still too long at this point, give up
-        return self.chunk_strs_by_char_count(strs=chunks, max_char_count=max_chunk_chars)
+        return self.chunk_strs_by_char_count(
+            strs=chunks,
+            max_char_count=max_chunk_chars,
+        )
 
 
-    def chunk_generic_text(self, 
-                           text: str, 
-                           max_chunk_chars: int = MAX_CHUNK_CHAR_COUNT) -> list[str]:
+    def chunk_generic_text(
+        self,
+        text: str,
+        max_chunk_chars: int = MAX_CHUNK_CHAR_COUNT,
+    ) -> list[str]:
         """
         Takes generic text as an input string and returns a list of strings
         where each string will *NORMALLY* be no longer than max_chunk_chars. For
@@ -136,7 +153,7 @@ class Strutil:
         # if any chunks are too long after page numbers, try blank lines
         # note that this is specifically splitting by emptyish lines, and there
         # are edge cases where the assumptions about what an emptyish line is
-        # could be wrong... but at that point the text may require some manual 
+        # could be wrong... but at that point the text may require some manual
         # clean up.
         chunks = [s for s in self.flatten([
             c if len(c) <= max_chunk_chars else self.split_by_emptyish_lines(c)
@@ -144,13 +161,18 @@ class Strutil:
         ])]
 
         # if any chunk is still too long at this point, give up
-        return self.chunk_strs_by_char_count(strs=chunks, max_char_count=max_chunk_chars) 
+        return self.chunk_strs_by_char_count(
+            strs=chunks,
+            max_char_count=max_chunk_chars,
+        )
 
 
-    def chunk_strs_by_char_count(self,
-                                 strs: list[str],
-                                 max_char_count: int = MAX_CHUNK_CHAR_COUNT,
-                                 join_str: str = "\n\n") -> list[str]:
+    def chunk_strs_by_char_count(
+        self,
+        strs: list[str],
+        max_char_count: int = MAX_CHUNK_CHAR_COUNT,
+        join_str: str = "\n\n",
+    ) -> list[str]:
         """
         Takes an array of strings and, maintaining order, concatenates them to
         make them as long as possible without going over the max_char_count. If
@@ -180,7 +202,8 @@ class Strutil:
                 if buff:
                     res.append(join_str.join(buff))
                     buff, buff_chars = [], 0
-                self.log(f"single string length ({s_len}) exceeds max_char_count ({max_char_count})")
+                self.log(f"single string length ({s_len}) exceeds \
+                    max_char_count ({max_char_count})")
                 res.append(s)
                 continue
 
@@ -200,14 +223,14 @@ class Strutil:
 
     def split_by_line_type(self, text: str, line_matcher: Callable)->list[str]:
         """
-        Takes text, converts to a list of lines, and uses a line matching 
-        function to find break points for splitting the text. Each line that
-        matches will become the first line of the next string.
+        Splits a string into an array of strings, where each string is a
+        substring of the input string that is separated by one or more lines
+        that match a given line matching function.
 
         Line matcher: lamda x: x == "br"
         Input: "line 1\\nline2\\nbr\\nline3\\nbr\\nline4"
         Returns: ["line 1\\nline2", "br\\nline3", "br\\nline4"]
-        
+
         :param text
         Text as a string.
 
@@ -221,7 +244,7 @@ class Strutil:
             # if it gets to the last line, add whatever the last chunk is
             if end == len(lines):
                 buff.append("\n".join(lines[start:len(lines)]))
-            # if end is a scene heading, add up to that line but not including it
+            # if end is a scene heading, add up to but not including that line
             elif line_matcher(lines[end]):
                 buff.append("\n".join(lines[start:end]))
                 start = end
@@ -232,25 +255,62 @@ class Strutil:
 
     def split_by_scene_heading(self, text: str) -> list[str]:
         """
-        Takes a screenplay (as a string) and returns the screenplay as an array
-        of scenes (strings). 
+        Splits a string into an array of strings, where each string is a
+        substring of the input string that is separated by one or more scene
+        headings.
 
         :param text
-        The screenplay as a string.
+        The string to split.
         """
-        return self.split_by_line_type(text=text, line_matcher=self.line_is_scene_heading)
-    
+        return self.split_by_line_type(
+            text=text,
+            line_matcher=self.line_is_scene_heading,
+        )
+
 
     def split_by_scene_transition(self, text: str) -> list[str]:
-        return self.split_by_line_type(text=text, line_matcher=self.line_is_transition)
+        """
+        Splits a string into an array of strings, where each string is a
+        substring of the input string that is separated by one or more scene
+        transitions.
+
+        :param text
+        The string to split.
+        """
+        return self.split_by_line_type(
+            text=text,
+            line_matcher=self.line_is_transition,
+        )
 
 
     def split_by_page_number(self, text: str) -> list[str]:
-        return self.split_by_line_type(text=text, line_matcher=self.line_is_page_number)
-    
-    
+        """
+        Splits a string into an array of strings, where each string is a
+        substring of the input string that is separated by one or more page
+        numbers.
+
+        :param text
+        The string to split.
+        """
+        return self.split_by_line_type(
+            text=text,
+            line_matcher=self.line_is_page_number,
+        )
+
+
     def split_by_emptyish_lines(self, text: str) -> list[str]:
-        return self.split_by_line_type(text=text, line_matcher=self.line_is_emptyish)
+        """
+        Splits a string into an array of strings, where each string is a
+        substring of the input string that is separated by one or more emptyish
+        lines.
+
+        :param text
+        The string to split.
+        """
+        return self.split_by_line_type(
+            text=text,
+            line_matcher=self.line_is_emptyish,
+        )
 
 
     def line_is_scene_heading(self, line: str) -> bool:
@@ -269,12 +329,12 @@ class Strutil:
             # fountain scene headings don't have to be all caps
             if l.startswith(k):
                 return True
-        
-        # in fountain, a period immediately followed by any aphanumeric character
-        # forces a scene heading (ie ".ext" or ".some scene" but not "...some scene")
-        # assume a match is a scene heading
+
+        # in fountain, a period immediately followed by any aphanumeric
+        # character forces a scene heading (ie ".ext" or ".some scene" but
+        # not "...some scene") assume a match is a scene heading
         return RE_FOUNTAIN_SCENE_HEADING.match(l)
-    
+
 
     def line_is_transition(self, line: str) -> bool:
         """
@@ -291,10 +351,10 @@ class Strutil:
             # fountain scene headings don't have to be all caps
             if l.startswith(k):
                 return True
-            
+
         # in fountain, anything that ends with "TO:" is a transition
         return line.endswith(" TO:") # use unstripped, for leading white space
-    
+
 
     def line_is_page_number(self, line: str) -> bool:
         """
@@ -305,7 +365,7 @@ class Strutil:
         """
         l = line.strip()
         return RE_PAGE_NUMBER.match(l) or RE_ROMAN_NUMERAL_PAGE_NUMBER.match(l)
- 
+
 
     def line_is_emptyish(self, line: str) -> bool:
         """
@@ -319,14 +379,14 @@ class Strutil:
         String to check.
         """
         return line.strip() == "" or (len(line) == 1 and not line.isalnum())
-    
+
 
     def subarrayify(self, arr: list, subarray_length: int) -> list[str]:
         """
-        Takes an array and a subarray length and returns an array of arrays where
-        each subarray is of length subarray_length (the last one can be shorter).
-        For example: subarrayify([1, 2, 3, 4, 5], subarray_length=2) would return
-        [[1, 2], [3, 4], [5]]
+        Takes an array and a subarray length and returns an array of arrays 
+        where each subarray is of length subarray_length (the last one can be 
+        shorter). For example: subarrayify([1, 2, 3, 4, 5], subarray_length=2) 
+        would return [[1, 2], [3, 4], [5]]
 
         :param arr
         Array of items to turn into subarrays
@@ -335,9 +395,9 @@ class Strutil:
         Length of each subarray. 
         """
         if subarray_length < 2:
-            raise Exception("Subarray length must be at least 2")
+            raise ValueError("Subarray length must be at least 2")
         return [arr[i:i+subarray_length] for i in range(0, len(arr), subarray_length)]
-    
+
 
     def remove_consecutive_blank_lines(self, text: str) -> str:
         """
@@ -365,6 +425,12 @@ class Strutil:
         return "\n".join(res)
 
     def flatten(self, lst):
+        """
+        Flattens a nested list of lists into a single list.
+
+        :param lst
+        List to flatten.
+        """
         for item in lst:
             if isinstance(item, Iterable) and not isinstance(item, (str, bytes)):
                 yield from self.flatten(item)
@@ -373,5 +439,15 @@ class Strutil:
 
     @staticmethod
     def write_file(path: Path, text: str) -> None:
-        with open(path, "w") as f:
+        """
+        Writes text to a file.
+
+        :param path
+        Path to write the file to.
+
+        :param text
+        Text to write to the file.
+        """ 
+        with open(path, "w", encoding="utf-8") as f:
             f.write(text)
+
