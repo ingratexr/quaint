@@ -1,7 +1,7 @@
 # quaint
-quaint (*qu*ick *ai* li*nt*) takes an input document (plain text or pdf) and uses an llm to lint and format the text.
+quaint (*qu*ick *ai* li*nt*) takes an input document (plain text or pdf), extracts the text (reading the text directly for plain text, extracting it for a pdf, or optionally using optical character recognition, e.g. for pdfs of scanned documents), and then prompts an LLM to lint/reformat the text.
 
-it turns this noisy OCR scan:
+It automagically turns this noisy OCR scan:
 ```
 48
 
@@ -14,7 +14,7 @@ ASL
 AS2
 52
 
-REVISED 8/19/2017
+REVISED 11/1/2017
 -- 33-36.
 
 David dives headfirst onto the small bed. He grabs the
@@ -65,3 +65,67 @@ Let's try the next street.
 
 CUT TO:
 ```
+
+The quaint pipeline was originally created to reformat messy text into proper (fountain) screenplay format but the same process (with a much simpler linting prompt) works for general text. Quaint also lets you use your own linting prompt if you have some special use case.
+
+
+# Installation
+```
+pip install quaint
+```
+
+## OpenAI API Key
+quaint requires an OpenAI API key to use the LLM to lint text. (Text extraction will work without it.) Set the key in your environment:
+
+```
+OPENAI_API_KEY="very secret key"
+```
+
+## Optional Dependencies
+If you want to use optical character recognition to extract text from pdfs, quaint requires binaries for ```tesseract``` and ```poppler``` to be installed on your system. These binaries are not included in quaint itself and you'll need to install them separately:
+
+```
+# macOS
+brew install tesseract poppler
+
+# Ubuntu/Debian
+sudo apt install tesseract-ocr poppler-utils
+
+# Windows
+lol
+```
+OCR is quite a bit slower than direct text extraction, but is usually necessary if you're starting with a scanned file. If you don't know whether you need to use OCR you can always try to extract the text without linting it using the ```--no-lint``` flag and then review that output manually to see if it's any good.
+
+# Usage
+To extract and lint general text from a pdf or text file:
+```
+quaint ./path/to/my.pdf
+```
+This will extract the text and save it to ```./path/to/my_extracted_text.txt``` and lint the text and save it to ```./path/to/my_linted_text.txt```.
+
+If it's a screenplay and you want to use OCR:
+```
+quaint ./path/to/my_scanned_screenplay.pdf --mode screenplay --ocr
+```
+## Options
+- `-m, --mode <text|t|screenplay|sp>`: Type of input text (generic or screenplay). Generic by default/if omitted.
+- `-o, --output <file>`: Save linted output to this file instead of default
+- `--extracted-text <file>`: Save extracted unlinted text to this file instead of default
+- `--ocr`: Use optical character recognition to extract text if it's a PDF (false by default; quaint will try to simply pull out the text if the input is a PDF)
+- `--no-lint`: Extract and save text only, without AI linting
+- `--prompt <file>`: File to use as custom AI linting prompt
+
+## Additional Notes
+
+- Input files must exist and be readable.
+- Output and extracted text files will be created in the same directory as the input unless specified.
+
+
+# TODO
+- Support more LLMs
+- More prompts for other kinds of text input/formatting
+- Set of evals for existing and new prompts
+- Config to set:
+    - Default mode (text, screenplay, other text types)
+    - Preferred LLM once supported
+    - LLM API key
