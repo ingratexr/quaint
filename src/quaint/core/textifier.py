@@ -54,14 +54,13 @@ class Textifier:
         :param file
         Path of file to extract.
         """
-        # If it has the pdf magic header, assume it's a pdf
-        with open(file, "rb") as f:
-            header = f.read(5)
-            if header == PDF_MAGIC_HEADER:
-                return FileType.PDF
-
         # Otherwise try to get the plain text. If no worky, give up.
         try:
+            # If it has the pdf magic header, assume it's a pdf
+            with open(file, "rb") as f:
+                header = f.read(5)
+                if header == PDF_MAGIC_HEADER:
+                    return FileType.PDF
             with open(file, "r", encoding="utf-8") as f:
                 f.read(1)
                 # if it reads without an exception, assume it's plain text
