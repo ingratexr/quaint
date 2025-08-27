@@ -1,6 +1,13 @@
 [project]
 name = "quaint"
 version = "0.1.0"
+authors=[
+    { name = "John Hudson", email = "jh@ingratexr.com" },
+]
+description = "LLM-powered text linter"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 dependencies = [
     "click",
     "openai",
@@ -9,6 +16,9 @@ dependencies = [
     "pytesseract",
     "pdfminer.six",
 ]
+
+[project.urls]
+Homepage = "https://github.com/ingratexr/quaint"
 
 [project.scripts]
 quaint = "quaint.cli.main:main"
