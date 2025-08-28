@@ -1,5 +1,5 @@
 # quaint
-quaint (*qu*ick *ai* li*nt*) takes an input document (plain text or pdf), extracts the text (reading the text directly for plain text, extracting it for a pdf, or optionally using optical character recognition, e.g. for pdfs of scanned documents), and then prompts an LLM to lint/reformat the text.
+quaint (*qu*ick *ai* li*nt*) takes an input document (plain text or pdf), extracts the text, prompts an LLM to lint/reformat/clean up, and saves the result.
 
 It automagically turns this noisy OCR scan:
 ```
