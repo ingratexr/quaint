@@ -8,13 +8,14 @@ description = "LLM-powered text linter"
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
+requires-python = ">=3.13"
 dependencies = [
-    "click",
-    "openai",
-    "dotenv",
-    "pdf2image",
-    "pytesseract",
-    "pdfminer.six",
+    "click>=8.2.1",
+    "openai>=1.99.9",
+    "python-dotenv>=1.1.1",
+    "pdf2image>=1.17.0",
+    "pytesseract>=0.3.13",
+    "pdfminer.six>=20250506",
 ]
 
 [project.urls]
