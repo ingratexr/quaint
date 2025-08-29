@@ -70,7 +70,7 @@ class Pipeline:
             self.log(f"Saved linted text to: {context.output_file}")
             self.log("Finished!")
         except Exception as e:
-            self.log(f"Encountered an unexpected error: {e}")
+            self.log(f"Encountered an unexpected error:\n{e}")
 
 
     def _get_chunked(self, context: Context, file: File) -> list[str]:

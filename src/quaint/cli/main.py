@@ -36,20 +36,22 @@ import asyncio
     help="File to use as custom ai linting prompt")
 def main(input_file, output, extracted_text, ocr, no_lint, mode, prompt):
     """quaint cli: quick ai-powered linting for pdf and text files"""
-
-    context = Context(
-        input_file=input_file,
-        output_path=output,
-        extracted_text_path=extracted_text,
-        use_ocr=ocr,
-        no_lint=no_lint,
-        mode=mode,
-        custom_prompt_path=prompt,
-        log=click.echo,
-        confirm=click.confirm,
-        progress_fn=lambda msg: click.echo(msg, nl=False),
-    )
-    asyncio.run(main_async(context))
+    try:
+        context = Context(
+            input_file=input_file,
+            output_path=output,
+            extracted_text_path=extracted_text,
+            use_ocr=ocr,
+            no_lint=no_lint,
+            mode=mode,
+            custom_prompt_path=prompt,
+            log=click.echo,
+            confirm=click.confirm,
+            progress_fn=lambda msg: click.echo(msg, nl=False),
+        )
+        asyncio.run(main_async(context))
+    except Exception as e:
+        click.echo(f"Encountered an unexpected error:\n{e}")
 
 
 async def main_async(context: Context) -> None:
