@@ -28,3 +28,13 @@ quaint = "quaint.cli.main:main"
 dev = [
     "twine>=6.1.0",
 ]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+quaint = ["prompts/*.txt"]
