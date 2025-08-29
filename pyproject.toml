@@ -23,3 +23,8 @@ Homepage = "https://github.com/ingratexr/quaint"
 
 [project.scripts]
 quaint = "quaint.cli.main:main"
+
+[dependency-groups]
+dev = [
+    "twine>=6.1.0",
+]
