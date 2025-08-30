@@ -1,5 +1,5 @@
 """
-CLI entrypoint for quaint.
+CLI entrypoint for textaur.
 """
 
 import click
@@ -35,7 +35,7 @@ import asyncio
     type=click.Path(exists=True, readable=True),
     help="File to use as custom ai linting prompt")
 def main(input_file, output, extracted_text, ocr, no_lint, mode, prompt):
-    """quaint cli: quick ai-powered linting for pdf and text files"""
+    """textaur cli: ai-powered linting for pdf and text files"""
     try:
         context = Context(
             input_file=input_file,

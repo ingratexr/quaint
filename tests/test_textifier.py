@@ -2,7 +2,7 @@ import os
 import sys
 from pathlib import Path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
-from quaint.core.textifier import Textifier, PDF_MAGIC_HEADER, FileType
+from textaur.core.textifier import Textifier, PDF_MAGIC_HEADER, FileType
 from unittest.mock import patch, mock_open, MagicMock
 from pdfminer.layout import LTTextContainer, LTTextLineHorizontal
 
@@ -51,7 +51,7 @@ class TestExtractText:
         res = ["expected", "pdf", "pages"]
         with (
             patch("builtins.open", mock_open_pdf),
-            patch("quaint.core.textifier.Textifier.text_from_pdf_extraction", return_value=res)
+            patch("textaur.core.textifier.Textifier.text_from_pdf_extraction", return_value=res)
         ):
             file = self.textifier.extract_text(
                 file=Path("whatever"),
@@ -65,7 +65,7 @@ class TestExtractText:
         res = ["expected", "pdf", "pages"]
         with (
             patch("builtins.open", mock_open_pdf),
-            patch("quaint.core.textifier.Textifier.text_from_pdf_ocr", return_value=res)
+            patch("textaur.core.textifier.Textifier.text_from_pdf_ocr", return_value=res)
         ):
             file = self.textifier.extract_text(
                 file=Path("whatever"),
@@ -86,7 +86,7 @@ class TestPdfTextExtractionWithoutOCR:
         fake_container = MagicMock(spec=LTTextContainer)
         fake_container.__iter__.return_value = [fake_line1, fake_line2]
 
-        with patch("quaint.core.textifier.extract_pages", return_value=[[fake_container]]):
+        with patch("textaur.core.textifier.extract_pages", return_value=[[fake_container]]):
             pages = self.textifier.text_from_pdf_extraction(file=Path("whatever"))
 
         assert isinstance(pages, list)
@@ -101,8 +101,8 @@ class TestPdfTextExtractionWithOCR:
         converted_pages = ["converted", "pages"]
 
         with (
-            patch("quaint.core.textifier.convert_from_path", return_value=converted_pages),
-            patch("quaint.core.textifier.pytesseract.image_to_string", lambda x: x)
+            patch("textaur.core.textifier.convert_from_path", return_value=converted_pages),
+            patch("textaur.core.textifier.pytesseract.image_to_string", lambda x: x)
         ):
             pages = self.textifier.text_from_pdf_ocr(file=Path("whatever"))
 

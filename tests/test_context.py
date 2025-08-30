@@ -2,7 +2,7 @@ import os
 import sys
 from pathlib import Path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
-from quaint.core.context import (
+from textaur.core.context import (
     Context,
     Mode,
     DEFAULT_MODE,
