@@ -1,6 +1,6 @@
 [project]
-name = "quaint"
-version = "0.1.3"
+name = "textaur"
+version = "0.1.0"
 authors=[
     { name = "John Hudson", email = "jh@ingratexr.com" },
 ]
@@ -19,10 +19,10 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/ingratexr/quaint"
+Homepage = "https://github.com/ingratexr/textaur"
 
 [project.scripts]
-quaint = "quaint.cli.main:main"
+textaur = "textaur.cli.main:main"
 
 [dependency-groups]
 dev = [
@@ -38,4 +38,4 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 
 [tool.setuptools.package-data]
-quaint = ["prompts/*.txt"]
+textaur = ["prompts/*.txt"]

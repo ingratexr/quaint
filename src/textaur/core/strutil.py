@@ -1,5 +1,5 @@
 """
-String utilities for quaint.
+String utilities for textaur.
 """
 import re
 from typing import Callable
@@ -58,7 +58,7 @@ RE_ROMAN_NUMERAL_PAGE_NUMBER = re.compile(r"^\s*[ivxlc]{1,10}\.?\s*$")
 
 class Strutil:
     """
-    String utility class for handling quaint string operations.
+    String utility class for handling textaur string operations.
     """
     def __init__(self, log: Callable = print):
         self.log = log

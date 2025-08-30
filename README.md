@@ -1,5 +1,5 @@
-# quaint
-quaint (*qu*ick *ai* li*nt*) takes an input document (plain text or pdf), extracts the text, prompts an LLM to lint/reformat/clean up, and saves the result.
+# textaur 
+textaur takes an input document (plain text or pdf), extracts the text, prompts an LLM to lint/reformat/clean up, and saves the result.
 
 It automagically turns this noisy OCR scan:
 ```
@@ -66,23 +66,23 @@ Let's try the next street.
 CUT TO:
 ```
 
-The quaint pipeline was originally created to reformat messy text into proper (fountain) screenplay format but the same process (with a much simpler linting prompt) works for general text. Quaint also lets you use your own linting prompt if you have some special use case.
+The textaur pipeline was originally created to reformat messy text into proper (fountain) screenplay format but the same process (with a much simpler linting prompt) works for general text. Textaur also lets you use your own linting prompt if you have some special use case.
 
 
 # Installation
 ```
-pip install quaint
+pip install textaur 
 ```
 
 ## OpenAI API Key
-quaint requires an OpenAI API key to use the LLM to lint text. (Text extraction will work without it.) Set the key in your environment:
+textaur requires an OpenAI API key to use the LLM to lint text. (Text extraction will work without it.) Set the key in your environment:
 
 ```
 OPENAI_API_KEY="very secret key"
 ```
 
 ## Optional Dependencies
-If you want to use optical character recognition to extract text from pdfs, quaint requires binaries for ```tesseract``` and ```poppler``` to be installed on your system. These binaries are not included in quaint itself and you'll need to install them separately:
+If you want to use optical character recognition to extract text from pdfs, textaur requires binaries for ```tesseract``` and ```poppler``` to be installed on your system. These binaries are not included in textaur itself and you'll need to install them separately:
 
 ```
 # macOS
@@ -94,24 +94,24 @@ sudo apt install tesseract-ocr poppler-utils
 # Windows
 lol
 ```
-OCR is quite a bit slower than direct text extraction, but is usually necessary if you're starting with a scanned file. If you don't know whether you need to use OCR you can always try to extract the text without linting it using the ```--no-lint``` flag and then review that output manually to see if it's any good.
+OCR is noticeably slower than direct text extraction, but is usually necessary if you're starting with a scanned file. If you don't know whether you need to use OCR you can always try to extract the text without linting it using the ```--no-lint``` flag and then review that output manually to see if it's any good.
 
 # Usage
 To extract and lint general text from a pdf or text file:
 ```
-quaint ./path/to/my.pdf
+textaur ./path/to/my.pdf
 ```
-This will extract the text and save it to ```./path/to/my_extracted_text.txt``` and lint the text and save it to ```./path/to/my_linted_text.txt```.
+This will extract the text and save it to ```./path/to/my_extracted_text.txt``` and lint the text and save it to ```./path/to/my_linted_text.txt```. The extracted text will only be saved as a separate file if the input file is a pdf, not if it's plain text.
 
 If it's a screenplay and you want to use OCR:
 ```
-quaint ./path/to/my_scanned_screenplay.pdf --mode screenplay --ocr
+textaur ./path/to/my_scanned_screenplay.pdf --mode screenplay --ocr
 ```
 ## Options
 - `-m, --mode <text|t|screenplay|sp>`: Type of input text (generic or screenplay). Generic by default/if omitted.
 - `-o, --output <file>`: Save linted output to this file instead of default
 - `--extracted-text <file>`: Save extracted unlinted text to this file instead of default
-- `--ocr`: Use optical character recognition to extract text if it's a PDF (false by default; quaint will try to simply pull out the text if the input is a PDF)
+- `--ocr`: Use optical character recognition to extract text if it's a PDF (false by default; textaur will try to simply pull out the text if the input is a PDF)
 - `--no-lint`: Extract and save text only, without AI linting
 - `--prompt <file>`: File to use as custom AI linting prompt
 
