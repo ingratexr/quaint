@@ -51,13 +51,14 @@ class Pipeline:
                 or not (file.text or file.pages)):
                 self.log("Unable to extract text. Sorry!")
                 return
-            # Save the extracted text
-            extracted = "".join(file.pages) if file.pages else file.text
-            self.strutil.write_file(
-                path=context.extracted_text_file,
-                text=extracted,
-            )
-            self.log(f"Saved extracted text to: {context.extracted_text_file}")
+            # Save the extracted text only if it wasn't a text file
+            if not file.filetype == FileType.TEXT:
+                extracted = "".join(file.pages) if file.pages else file.text
+                self.strutil.write_file(
+                    path=context.extracted_text_file,
+                    text=extracted,
+                )
+                self.log(f"Saved extracted text to: {context.extracted_text_file}")
             # if no lint, that's it
             if context.no_lint:
                 return
@@ -70,7 +71,7 @@ class Pipeline:
             self.log(f"Saved linted text to: {context.output_file}")
             self.log("Finished!")
         except Exception as e:
-            self.log(f"Encountered an unexpected error: {e}")
+            self.log(f"Encountered an unexpected error:\n{e}")
 
 
     def _get_chunked(self, context: Context, file: File) -> list[str]:
